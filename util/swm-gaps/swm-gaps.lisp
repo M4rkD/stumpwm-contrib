@@ -56,13 +56,18 @@ HEIGHT are subtracted."
       (if (apply-gaps-p win)
           (multiple-value-setq (ox oy ow oh) (gaps-offsets win)))
 
-      (setf width (- width ow)
-            height (- height oh)
+      ;; only implement gaps if window height and width
+      ;; are greater than min-frame-width after adjustment
+      ;; If heights become negative, this causes
+      ;; stumpwm to crash.
+      (setf width (max *min-frame-width* (- width ow))
+            height (max *min-frame-height* (- height oh))
             x (+ x ox)
             y (+ y oy))
 
       ;; This is the only place a window's geometry should change
       (set-window-geometry win :x wx :y wy :width width :height height :border-width 0)
+
       (xlib:with-state ((window-parent win))
         ;; FIXME: updating the border doesn't need to be run everytime
         ;; the window is maximized, but only when the border style or
